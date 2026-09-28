@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # app
 
 A new Flutter project.
@@ -15,3 +16,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# Inventory-Management
+A Web application built to manage and keep track of the day to day bill expenses,along with invoices,and bill generation features
+>>>>>>> 4b891d0a38d10a9b9438c47fe672a4faf6d55398
