@@ -61,7 +61,7 @@ flutter:
     - assets/images/lotus_logo.jpg
     - assets/images/sri_lakshmi.png
     - assets/fonts/NotoSans-Regular.ttf
-    - assets/fonts/NotoSans-Bold.ttfgit
+    - assets/fonts/NotoSans-Bold.ttf
     
 
   # The following line ensures that the Material Icons font is
