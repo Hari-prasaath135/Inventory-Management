@@ -1,10 +1,10 @@
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../models/invoice.dart';
 import '../models/bill_item.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 class InvoicePdfService {
   // ============================================================
@@ -21,11 +21,12 @@ class InvoicePdfService {
 
   static const String address =
       'Near KBS Coffe Shop, Chetty Street,\n'
-      'Sri Vija Lakshmi, Pondicherry - 605001';
+      ' Pondicherry - 605001';
 
   static const String email =
       'sreelakshmicards@gmail.com';
-
+  static const String mobile =
+    'Mobile: +91 90423 80305';
   static const String gstin =
       '34BPPPA3805N2ZQ';
 
@@ -33,58 +34,70 @@ class InvoicePdfService {
       'Puducherry (34)';
 
   // ============================================================
-  // COLORS
+  // MAIN PDF FUNCTION
   // ============================================================
 
-  static final PdfColor burgundy =
-      PdfColor.fromHex('#8D1725');
+  static Future<void> generateInvoicePdf(
+    Invoice invoice,
+  ) async {
+    final pdf = pw.Document();
 
-  static final PdfColor darkBurgundy =
-      PdfColor.fromHex('#650C18');
+    // ------------------------------------------------------------
+    // Load Sri Lakshmi PNG
+    // ------------------------------------------------------------
 
-  static final PdfColor lightPink =
-      PdfColor.fromHex('#F9EDEE');
+    final lakshmiImage = pw.MemoryImage(
+      (await rootBundle.load(
+        'assets/images/sri_lakshmi.png',
+      ))
+          .buffer
+          .asUint8List(),
+    );
 
-  static final PdfColor gold =
-      PdfColor.fromHex('#C99A3D');
+    // ------------------------------------------------------------
+    // Load Unicode fonts
+    // Required for ₹ symbol
+    // ------------------------------------------------------------
 
-  static final PdfColor darkText =
-      PdfColor.fromHex('#101936');
-
-  static final PdfColor lightBorder =
-      PdfColor.fromHex('#D9C7C9');
-
-  // ============================================================
-  // MAIN FUNCTION
-  // ============================================================
-
-static Future<void> generateInvoicePdf(
-  Invoice invoice,
-) async {
-  final pdf = pw.Document();
-
-  final lakshmiImage = pw.MemoryImage(
-    (await rootBundle.load(
-      'assets/images/sri_lakshmi.png',
-    ))
-        .buffer
-        .asUint8List(),
-  );
-
-  pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(20),
-       build: (context) {
-  return _buildInvoicePage(
-    invoice,
-    lakshmiImage,
-  );
-},
+    final regularFont = pw.Font.ttf(
+      await rootBundle.load(
+        'assets/fonts/NotoSans-Regular.ttf',
       ),
     );
 
-    // Opens the system print/PDF preview.
+    final boldFont = pw.Font.ttf(
+      await rootBundle.load(
+        'assets/fonts/NotoSans-Bold.ttf',
+      ),
+    );
+
+    final pdfTheme = pw.ThemeData.withFont(
+      base: regularFont,
+      bold: boldFont,
+    );
+
+    // ------------------------------------------------------------
+    // Create A4 page
+    // ------------------------------------------------------------
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(24),
+        theme: pdfTheme,
+        build: (context) {
+          return _buildInvoicePage(
+            invoice,
+            lakshmiImage,
+          );
+        },
+      ),
+    );
+
+    // ------------------------------------------------------------
+    // Open print / save PDF preview
+    // ------------------------------------------------------------
+
     await Printing.layoutPdf(
       onLayout: (format) async {
         return pdf.save();
@@ -93,77 +106,69 @@ static Future<void> generateInvoicePdf(
   }
 
   // ============================================================
-  // COMPLETE INVOICE PAGE
+  // COMPLETE INVOICE
   // ============================================================
 
-static pw.Widget _buildInvoicePage(
-  Invoice invoice,
-  pw.ImageProvider lakshmiImage,
-) {
+  static pw.Widget _buildInvoicePage(
+    Invoice invoice,
+    pw.ImageProvider lakshmiImage,
+  ) {
     return pw.Container(
       decoration: pw.BoxDecoration(
         border: pw.Border.all(
-          color: lightBorder,
+          color: PdfColors.grey600,
           width: 0.7,
         ),
       ),
       child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+        crossAxisAlignment:
+            pw.CrossAxisAlignment.stretch,
         children: [
-
-          // ----------------------------------------------------
+          // ------------------------------------------------------
           // HEADER
-          // ----------------------------------------------------
+          // ------------------------------------------------------
 
-         _buildHeader(lakshmiImage),
+          _buildHeader(lakshmiImage),
 
-          pw.SizedBox(height: 8),
+          pw.SizedBox(height: 10),
 
-          // ----------------------------------------------------
-          // TAX INVOICE BAR
-          // ----------------------------------------------------
+          // ------------------------------------------------------
+          // TAX INVOICE
+          // ------------------------------------------------------
 
-          _buildTaxInvoiceHeader(invoice),
+          _buildTaxInvoiceHeader(),
 
           pw.SizedBox(height: 12),
 
-          // ----------------------------------------------------
+          // ------------------------------------------------------
           // BILL TO + INVOICE DETAILS
-          // ----------------------------------------------------
+          // ------------------------------------------------------
 
           _buildCustomerAndInvoiceDetails(invoice),
 
           pw.SizedBox(height: 12),
 
-          // ----------------------------------------------------
-          // PRODUCT TABLE
-          // ----------------------------------------------------
+          // ------------------------------------------------------
+          // PRODUCTS
+          // ------------------------------------------------------
 
           _buildProductTable(invoice.items),
 
           pw.SizedBox(height: 12),
 
-          // ----------------------------------------------------
-          // AMOUNT IN WORDS + TOTALS
-          // ----------------------------------------------------
+          // ------------------------------------------------------
+          // TOTALS
+          // ------------------------------------------------------
 
           _buildTotalsSection(invoice),
 
           pw.SizedBox(height: 12),
 
-          // ----------------------------------------------------
-          // NOTES + THANK YOU
-          // ----------------------------------------------------
+          // ------------------------------------------------------
+          // NOTES
+          // ------------------------------------------------------
 
-          _buildNotesAndFooter(),
-
-          pw.SizedBox(height: 8),
-
-          // ----------------------------------------------------
-          // BOTTOM DECORATIVE FOOTER
-          // ----------------------------------------------------
-
-          _buildBottomFooter(),
+          _buildNotes(),
         ],
       ),
     );
@@ -172,127 +177,131 @@ static pw.Widget _buildInvoicePage(
   // ============================================================
   // HEADER
   // ============================================================
-static pw.Widget _buildHeader(
-  pw.ImageProvider lakshmiImage,
-) {
-  return pw.Container(
-    padding: const pw.EdgeInsets.fromLTRB(
-      18,
-      8,
-      18,
-      8,
-    ),
-    child: pw.Column(
-      children: [
-        // Sri Lakshmi logo
-        pw.Container(
-          height: 90,
-          alignment: pw.Alignment.center,
-          child: pw.Image(
-            lakshmiImage,
-            height: 88,
-            fit: pw.BoxFit.contain,
+
+  static pw.Widget _buildHeader(
+    pw.ImageProvider lakshmiImage,
+  ) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(10),
+      child: pw.Column(
+        children: [
+          // Sri Lakshmi image
+          pw.Container(
+            height: 75,
+            alignment: pw.Alignment.center,
+            child: pw.Image(
+              lakshmiImage,
+              height: 72,
+              fit: pw.BoxFit.contain,
+            ),
           ),
-        ),
 
-        pw.SizedBox(height: 4),
+          pw.SizedBox(height: 5),
 
-        pw.Divider(
-          color: gold,
-          thickness: 1,
-        ),
-
-        pw.SizedBox(height: 5),
-
-        // Address
-        pw.Text(
-          address,
-          textAlign: pw.TextAlign.center,
-          style: pw.TextStyle(
-            color: darkText,
-            fontSize: 8,
+          // Shop name
+          pw.Text(
+            shopName.toUpperCase(),
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(
+              fontSize: 17,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
-        ),
 
-        pw.SizedBox(height: 4),
+          pw.SizedBox(height: 3),
 
-        // Email
-        pw.Text(
-          email,
-          textAlign: pw.TextAlign.center,
-          style: pw.TextStyle(
-            color: darkText,
-            fontSize: 8,
+          // Tagline
+          pw.Text(
+            shopTagline,
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(
+              fontSize: 7.5,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+
+          pw.SizedBox(height: 2),
+
+          // Description
+          pw.Text(
+            shopDescription,
+            textAlign: pw.TextAlign.center,
+            style: const pw.TextStyle(
+              fontSize: 7,
+            ),
+          ),
+
+          pw.SizedBox(height: 5),
+
+          // Address
+          pw.Text(
+            address,
+            textAlign: pw.TextAlign.center,
+            style: const pw.TextStyle(
+              fontSize: 7.5,
+            ),
+          ),
+
+          pw.SizedBox(height: 2),
+
+          // Email
+          pw.Text(
+            email,
+            textAlign: pw.TextAlign.center,
+            style: const pw.TextStyle(
+              fontSize: 7.5,
+            ),
+          ),
+
+          pw.SizedBox(height: 2),
+          // Mobile
+            pw.Text(
+              mobile,
+              textAlign: pw.TextAlign.center,
+              style: const pw.TextStyle(
+                fontSize: 7.5,
+              ),
+            ),
+
+            pw.SizedBox(height: 2),
+                      // GSTIN
+          pw.Text(
+            'GSTIN: $gstin',
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(
+              fontSize: 8,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // ============================================================
   // TAX INVOICE HEADER
   // ============================================================
 
-  static pw.Widget _buildTaxInvoiceHeader(
-    Invoice invoice,
-  ) {
+  static pw.Widget _buildTaxInvoiceHeader() {
     return pw.Container(
-      margin: const pw.EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
       padding: const pw.EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 9,
+        horizontal: 10,
+        vertical: 8,
       ),
       decoration: pw.BoxDecoration(
-        color: lightPink,
-        borderRadius:
-            pw.BorderRadius.circular(7),
         border: pw.Border.all(
-          color: burgundy,
-          width: 0.6,
+          color: PdfColors.grey600,
+          width: 0.7,
         ),
       ),
-      child: pw.Row(
-        mainAxisAlignment:
-            pw.MainAxisAlignment.spaceBetween,
-        children: [
-
-          pw.Column(
-            crossAxisAlignment:
-                pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                'TAX INVOICE',
-                style: pw.TextStyle(
-                  color: burgundy,
-                  fontSize: 19,
-                  fontWeight:
-                      pw.FontWeight.bold,
-                ),
-              ),
-              pw.Text(
-                'ORIGINAL FOR RECIPIENT',
-                style: pw.TextStyle(
-                  color: burgundy,
-                  fontSize: 7,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
+      child: pw.Center(
+        child: pw.Text(
+          'TAX INVOICE',
+          style: pw.TextStyle(
+            fontSize: 16,
+            fontWeight: pw.FontWeight.bold,
           ),
-
-          pw.Text(
-            'GSTIN : $gstin',
-            style: pw.TextStyle(
-              color: darkText,
-              fontSize: 11,
-              fontWeight:
-                  pw.FontWeight.bold,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -309,63 +318,67 @@ static pw.Widget _buildHeader(
 
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(
-        horizontal: 14,
+        horizontal: 10,
       ),
       child: pw.Row(
         crossAxisAlignment:
             pw.CrossAxisAlignment.start,
         children: [
-
-          // -------------------------------
+          // ------------------------------------------------------
           // BILL TO
-          // -------------------------------
+          // ------------------------------------------------------
 
           pw.Expanded(
-            flex: 5,
-            child: pw.Column(
-              crossAxisAlignment:
-                  pw.CrossAxisAlignment.start,
-              children: [
-
-                pw.Text(
-                  'Bill To :',
-                  style: pw.TextStyle(
-                    color: burgundy,
-                    fontSize: 15,
-                    fontWeight:
-                        pw.FontWeight.bold,
-                  ),
+            flex: 1,
+            child: pw.Container(
+              padding: const pw.EdgeInsets.all(8),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(
+                  color: PdfColors.grey500,
+                  width: 0.6,
                 ),
+              ),
+              child: pw.Column(
+                crossAxisAlignment:
+                    pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Bill To:',
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
 
-                pw.SizedBox(height: 10),
+                  pw.SizedBox(height: 8),
 
-                _blankLine(),
-                _blankLine(),
-                _blankLine(),
-                _blankLine(),
-              ],
+                  _customerLine(),
+
+                  _customerLine(),
+
+                  _customerLine(),
+                ],
+              ),
             ),
           ),
 
-          pw.SizedBox(width: 15),
+          pw.SizedBox(width: 10),
 
-          // -------------------------------
+          // ------------------------------------------------------
           // INVOICE DETAILS
-          // -------------------------------
+          // ------------------------------------------------------
 
           pw.Expanded(
-            flex: 5,
+            flex: 1,
             child: pw.Container(
               decoration: pw.BoxDecoration(
                 border: pw.Border.all(
-                  color: lightBorder,
+                  color: PdfColors.grey500,
+                  width: 0.6,
                 ),
-                borderRadius:
-                    pw.BorderRadius.circular(7),
               ),
               child: pw.Column(
                 children: [
-
                   _detailRow(
                     'Invoice No.',
                     invoice.invoiceNumber,
@@ -395,17 +408,26 @@ static pw.Widget _buildHeader(
     );
   }
 
-  static pw.Widget _blankLine() {
+  // ============================================================
+  // CUSTOMER LINE
+  // ============================================================
+
+  static pw.Widget _customerLine() {
     return pw.Container(
-      margin:
-          const pw.EdgeInsets.only(bottom: 10),
       width: double.infinity,
+      margin: const pw.EdgeInsets.only(
+        bottom: 9,
+      ),
       child: pw.Divider(
-        color: darkText,
-        thickness: 0.4,
+        color: PdfColors.grey500,
+        thickness: 0.5,
       ),
     );
   }
+
+  // ============================================================
+  // INVOICE DETAIL ROW
+  // ============================================================
 
   static pw.Widget _detailRow(
     String label,
@@ -413,49 +435,43 @@ static pw.Widget _buildHeader(
     bool last = false,
   }) {
     return pw.Container(
-      decoration:pw.BoxDecoration(
-        border: last
-            ? null
-            : pw.Border(
+      decoration: last
+          ? null
+          : pw.BoxDecoration(
+              border: pw.Border(
                 bottom: pw.BorderSide(
-                  color: lightBorder,
-                  width: 0.6,
+                  color: PdfColors.grey400,
+                  width: 0.5,
                 ),
               ),
-      ),
+            ),
       child: pw.Row(
         children: [
-
           pw.Container(
-            width: 82,
-            padding:
-                const pw.EdgeInsets.all(7),
+            width: 80,
+            padding: const pw.EdgeInsets.all(7),
             child: pw.Text(
               label,
               style: pw.TextStyle(
-                color: darkText,
-                fontSize: 8.5,
-                fontWeight:
-                    pw.FontWeight.bold,
+                fontSize: 8,
+                fontWeight: pw.FontWeight.bold,
               ),
             ),
           ),
 
           pw.Container(
-            width: 0.6,
-            height: 30,
-            color: lightBorder,
+            width: 0.5,
+            height: 28,
+            color: PdfColors.grey400,
           ),
 
           pw.Expanded(
             child: pw.Padding(
-              padding:
-                  const pw.EdgeInsets.all(7),
+              padding: const pw.EdgeInsets.all(7),
               child: pw.Text(
                 value,
-                style: pw.TextStyle(
-                  color: darkText,
-                  fontSize: 8.5,
+                style: const pw.TextStyle(
+                  fontSize: 8,
                 ),
               ),
             ),
@@ -481,54 +497,59 @@ static pw.Widget _buildHeader(
         '${i + 1}',
         item.product.name,
         item.quantity.toString(),
-        _money(item.product.price),
-        _money(item.subtotal),
+        '₹ ${_money(item.product.price)}',
+        '₹ ${_money(item.subtotal)}',
       ]);
     }
 
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(
-        horizontal: 12,
+        horizontal: 10,
       ),
       child: pw.Table.fromTextArray(
         headers: [
           'S.No',
           'Description of Goods',
           'Quantity',
-          'Unit Price\n(₹)',
-          'Amount\n(₹)',
+          'Unit Price (₹)',
+          'Amount (₹)',
         ],
         data: rows,
+
+        // Simple black/grey table
         border: pw.TableBorder.all(
-          color: lightBorder,
+          color: PdfColors.grey600,
           width: 0.5,
         ),
+
         headerDecoration:
-            pw.BoxDecoration(
-          color: burgundy,
+            const pw.BoxDecoration(
+          color: PdfColors.grey300,
         ),
+
         headerStyle: pw.TextStyle(
-          color: PdfColors.white,
           fontSize: 8,
-          fontWeight:
-              pw.FontWeight.bold,
+          fontWeight: pw.FontWeight.bold,
         ),
-        cellStyle: pw.TextStyle(
-          color: darkText,
+
+        cellStyle: const pw.TextStyle(
           fontSize: 8,
         ),
+
         cellPadding:
             const pw.EdgeInsets.symmetric(
-          horizontal: 6,
-          vertical: 7,
+          horizontal: 5,
+          vertical: 6,
         ),
+
         columnWidths: {
           0: const pw.FixedColumnWidth(35),
-          1: const pw.FlexColumnWidth(4.8),
+          1: const pw.FlexColumnWidth(4.5),
           2: const pw.FixedColumnWidth(55),
-          3: const pw.FixedColumnWidth(70),
-          4: const pw.FixedColumnWidth(75),
+          3: const pw.FixedColumnWidth(75),
+          4: const pw.FixedColumnWidth(80),
         },
+
         cellAlignments: {
           0: pw.Alignment.center,
           1: pw.Alignment.centerLeft,
@@ -549,51 +570,45 @@ static pw.Widget _buildHeader(
   ) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(
-        horizontal: 14,
+        horizontal: 10,
       ),
       child: pw.Row(
         crossAxisAlignment:
             pw.CrossAxisAlignment.start,
         children: [
-
-          // -------------------------------
+          // ------------------------------------------------------
           // AMOUNT IN WORDS
-          // -------------------------------
+          // ------------------------------------------------------
 
           pw.Expanded(
             flex: 6,
             child: pw.Container(
-              padding:
-                  const pw.EdgeInsets.all(14),
+              padding: const pw.EdgeInsets.all(10),
               decoration: pw.BoxDecoration(
-                color: lightPink,
-                borderRadius:
-                    pw.BorderRadius.circular(8),
+                border: pw.Border.all(
+                  color: PdfColors.grey500,
+                  width: 0.5,
+                ),
               ),
               child: pw.Column(
                 crossAxisAlignment:
                     pw.CrossAxisAlignment.start,
                 children: [
-
                   pw.Text(
-                    'Amount in Words :',
+                    'Invoice Amount In Words:',
                     style: pw.TextStyle(
-                      color: burgundy,
-                      fontSize: 14,
-                      fontWeight:
-                          pw.FontWeight.bold,
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
                     ),
                   ),
 
-                  pw.SizedBox(height: 10),
+                  pw.SizedBox(height: 8),
 
                   pw.Text(
                     '${numberToWords(invoice.grandTotal)} Rupees Only',
                     style: pw.TextStyle(
-                      color: darkText,
-                      fontSize: 10,
-                      fontWeight:
-                          pw.FontWeight.bold,
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
                     ),
                   ),
                 ],
@@ -601,73 +616,74 @@ static pw.Widget _buildHeader(
             ),
           ),
 
-          pw.SizedBox(width: 14),
+          pw.SizedBox(width: 10),
 
-          // -------------------------------
-          // TOTALS TABLE
-          // -------------------------------
+          // ------------------------------------------------------
+          // TOTALS
+          // ------------------------------------------------------
 
           pw.Expanded(
             flex: 5,
             child: pw.Container(
               decoration: pw.BoxDecoration(
                 border: pw.Border.all(
-                  color: lightBorder,
+                  color: PdfColors.grey500,
+                  width: 0.5,
                 ),
-                borderRadius:
-                    pw.BorderRadius.circular(7),
               ),
               child: pw.Column(
                 children: [
-
                   _totalRow(
                     'Sub Total',
-                    _money(invoice.subtotal),
+                    invoice.subtotal,
                   ),
-
-                  if (invoice.sgst > 0)
-                    _totalRow(
-                      'SGST',
-                      _money(invoice.sgst),
-                    ),
 
                   if (invoice.cgst > 0)
                     _totalRow(
                       'CGST',
-                      _money(invoice.cgst),
+                      invoice.cgst,
+                    ),
+
+                  if (invoice.sgst > 0)
+                    _totalRow(
+                      'SGST',
+                      invoice.sgst,
                     ),
 
                   if (invoice.igst > 0)
                     _totalRow(
                       'IGST',
-                      _money(invoice.igst),
+                      invoice.igst,
                     ),
 
                   pw.Container(
-                    color: lightPink,
-                    padding:
-                        const pw.EdgeInsets.all(9),
+                    padding: const pw.EdgeInsets.all(8),
+                    decoration:
+                        const pw.BoxDecoration(
+                      border: pw.Border(
+                        top: pw.BorderSide(
+                          color: PdfColors.grey600,
+                          width: 0.7,
+                        ),
+                      ),
+                    ),
                     child: pw.Row(
                       mainAxisAlignment:
                           pw.MainAxisAlignment
                               .spaceBetween,
                       children: [
-
                         pw.Text(
-                          'TOTAL AMOUNT',
+                          'TOTAL',
                           style: pw.TextStyle(
-                            color: burgundy,
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight:
                                 pw.FontWeight.bold,
                           ),
                         ),
-
                         pw.Text(
                           '₹ ${_money(invoice.grandTotal)}',
                           style: pw.TextStyle(
-                            color: burgundy,
-                            fontSize: 13,
+                            fontSize: 11,
                             fontWeight:
                                 pw.FontWeight.bold,
                           ),
@@ -684,20 +700,23 @@ static pw.Widget _buildHeader(
     );
   }
 
+  // ============================================================
+  // SINGLE TOTAL ROW
+  // ============================================================
+
   static pw.Widget _totalRow(
     String label,
-    String value,
+    double value,
   ) {
     return pw.Container(
-      padding:
-          const pw.EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 7,
+      padding: const pw.EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 6,
       ),
-      decoration: pw.BoxDecoration(
+      decoration: const pw.BoxDecoration(
         border: pw.Border(
           bottom: pw.BorderSide(
-            color: lightBorder,
+            color: PdfColors.grey400,
             width: 0.5,
           ),
         ),
@@ -708,16 +727,14 @@ static pw.Widget _buildHeader(
         children: [
           pw.Text(
             label,
-            style: pw.TextStyle(
-              color: darkText,
-              fontSize: 9,
+            style: const pw.TextStyle(
+              fontSize: 8,
             ),
           ),
           pw.Text(
-            value,
-            style: pw.TextStyle(
-              color: darkText,
-              fontSize: 9,
+            '₹ ${_money(value)}',
+            style: const pw.TextStyle(
+              fontSize: 8,
             ),
           ),
         ],
@@ -729,152 +746,84 @@ static pw.Widget _buildHeader(
   // NOTES
   // ============================================================
 
-  static pw.Widget _buildNotesAndFooter() {
+  static pw.Widget _buildNotes() {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(
-        horizontal: 14,
+        horizontal: 10,
+        vertical: 8,
       ),
-      child: pw.Row(
-        crossAxisAlignment:
-            pw.CrossAxisAlignment.start,
-        children: [
-
-          // -------------------------------
-          // NOTES
-          // -------------------------------
-
-          pw.Expanded(
-            child: pw.Column(
-              crossAxisAlignment:
-                  pw.CrossAxisAlignment.start,
-              children: [
-
-                pw.Text(
-                  'Notes :',
-                  style: pw.TextStyle(
-                    color: burgundy,
-                    fontSize: 11,
-                    fontWeight:
-                        pw.FontWeight.bold,
-                  ),
-                ),
-
-                pw.SizedBox(height: 5),
-
-                _note(
-                  'Goods once sold will not be taken back or exchanged.',
-                ),
-
-                _note(
-                  'Please make the payment by cheque/cash/UPI.',
-                ),
-
-                _note(
-                  'GST is payable on Reverse Charge : No',
-                ),
-
-                _note(
-                  'Thank you for your business!',
-                ),
-              ],
+      child: pw.Container(
+        padding: const pw.EdgeInsets.all(8),
+        decoration: pw.BoxDecoration(
+          border: pw.Border.all(
+            color: PdfColors.grey500,
+            width: 0.5,
+          ),
+        ),
+        child: pw.Column(
+          crossAxisAlignment:
+              pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              'Notes:',
+              style: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
-          ),
 
-          pw.SizedBox(width: 20),
+            pw.SizedBox(height: 4),
 
-          // -------------------------------
-          // THANK YOU
-          // -------------------------------
-
-          pw.Expanded(
-            child: pw.Column(
-              children: [
-
-                pw.Divider(
-                  color: burgundy,
-                  thickness: 0.8,
-                ),
-
-                pw.SizedBox(height: 8),
-
-                pw.Text(
-                  'Thank You!',
-                  style: pw.TextStyle(
-                    color: burgundy,
-                    fontSize: 25,
-                    fontStyle:
-                        pw.FontStyle.italic,
-                  ),
-                ),
-
-                pw.SizedBox(height: 8),
-
-                pw.Text(
-                  '—  VISIT AGAIN  —',
-                  style: pw.TextStyle(
-                    color: burgundy,
-                    fontSize: 8,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ],
+            pw.Text(
+              'Goods once sold will not be taken back or exchanged.',
+              style: const pw.TextStyle(
+                fontSize: 7.5,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  static pw.Widget _note(String text) {
-    return pw.Padding(
-      padding:
-          const pw.EdgeInsets.only(bottom: 4),
-      child: pw.Text(
-        text,
-        style: pw.TextStyle(
-          color: darkText,
-          fontSize: 7.5,
+            pw.SizedBox(height: 2),
+
+            pw.Text(
+              'Please make the payment by cheque/cash/UPI.',
+              style: const pw.TextStyle(
+                fontSize: 7.5,
+              ),
+            ),
+
+            pw.SizedBox(height: 2),
+
+            pw.Text(
+              'GST is payable on Reverse Charge: No',
+              style: const pw.TextStyle(
+                fontSize: 7.5,
+              ),
+            ),
+
+            pw.SizedBox(height: 6),
+
+            pw.Center(
+              child: pw.Text(
+                'Thank you for your business!',
+                style: pw.TextStyle(
+                  fontSize: 8,
+                  fontWeight:
+                      pw.FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   // ============================================================
-  // BOTTOM FOOTER
+  // DATE FORMAT
   // ============================================================
 
-  static pw.Widget _buildBottomFooter() {
-    return pw.Container(
-      padding:
-          const pw.EdgeInsets.symmetric(
-        vertical: 11,
-      ),
-      decoration: pw.BoxDecoration(
-        color: darkBurgundy,
-        borderRadius:
-            const pw.BorderRadius.only(
-          bottomLeft: pw.Radius.circular(7),
-          bottomRight: pw.Radius.circular(7),
-        ),
-      ),
-      child: pw.Center(
-        child: pw.Text(
-          '✦   SPREAD HAPPINESS, ONE CARD AT A TIME   ✦',
-          style: pw.TextStyle(
-            color: PdfColors.white,
-            fontSize: 7.5,
-            letterSpacing: 1.5,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // DATE
-  // ============================================================
-
-  static String _formatDate(DateTime date) {
+  static String _formatDate(
+    DateTime date,
+  ) {
     final day =
         date.day.toString().padLeft(2, '0');
 
@@ -885,10 +834,12 @@ static pw.Widget _buildHeader(
   }
 
   // ============================================================
-  // TIME
+  // TIME FORMAT
   // ============================================================
 
-  static String _formatTime(DateTime date) {
+  static String _formatTime(
+    DateTime date,
+  ) {
     int hour = date.hour;
 
     final minute =
@@ -910,7 +861,9 @@ static pw.Widget _buildHeader(
   // MONEY FORMAT
   // ============================================================
 
-  static String _money(double value) {
+  static String _money(
+    double value,
+  ) {
     return value.toStringAsFixed(2);
   }
 
@@ -918,13 +871,16 @@ static pw.Widget _buildHeader(
   // NUMBER TO WORDS
   // ============================================================
 
-  static String numberToWords(double amount) {
+  static String numberToWords(
+    double amount,
+  ) {
     final rupees = amount.floor();
 
     final paise =
         ((amount - rupees) * 100).round();
 
-    String result = _convertNumber(rupees);
+    String result =
+        _convertNumber(rupees);
 
     if (paise > 0) {
       result +=
@@ -934,7 +890,13 @@ static pw.Widget _buildHeader(
     return _capitalize(result);
   }
 
-  static String _convertNumber(int number) {
+  // ============================================================
+  // CONVERT NUMBER
+  // ============================================================
+
+  static String _convertNumber(
+    int number,
+  ) {
     if (number == 0) {
       return 'Zero';
     }
@@ -944,8 +906,11 @@ static pw.Widget _buildHeader(
     }
 
     if (number < 100000) {
-      final thousands = number ~/ 1000;
-      final remainder = number % 1000;
+      final thousands =
+          number ~/ 1000;
+
+      final remainder =
+          number % 1000;
 
       String result =
           '${_convertNumber(thousands)} Thousand';
@@ -959,8 +924,11 @@ static pw.Widget _buildHeader(
     }
 
     if (number < 10000000) {
-      final lakhs = number ~/ 100000;
-      final remainder = number % 100000;
+      final lakhs =
+          number ~/ 100000;
+
+      final remainder =
+          number % 100000;
 
       String result =
           '${_convertNumber(lakhs)} Lakh';
@@ -973,8 +941,11 @@ static pw.Widget _buildHeader(
       return result;
     }
 
-    final crores = number ~/ 10000000;
-    final remainder = number % 10000000;
+    final crores =
+        number ~/ 10000000;
+
+    final remainder =
+        number % 10000000;
 
     String result =
         '${_convertNumber(crores)} Crore';
@@ -986,6 +957,10 @@ static pw.Widget _buildHeader(
 
     return result;
   }
+
+  // ============================================================
+  // BELOW THOUSAND
+  // ============================================================
 
   static String _convertBelowThousand(
     int number,
@@ -1052,7 +1027,13 @@ static pw.Widget _buildHeader(
         '${_convertBelowThousand(remainder)}';
   }
 
-  static String _capitalize(String value) {
+  // ============================================================
+  // CAPITALIZE
+  // ============================================================
+
+  static String _capitalize(
+    String value,
+  ) {
     if (value.isEmpty) {
       return value;
     }

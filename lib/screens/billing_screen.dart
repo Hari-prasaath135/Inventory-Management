@@ -134,7 +134,7 @@ class _BillingScreenState extends State<BillingScreen> {
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.darkBurgundy,
+        backgroundColor: AppTheme.primary,
       ),
     );
   }
@@ -187,35 +187,53 @@ class _BillingScreenState extends State<BillingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.cream,
-      appBar: const ThemedAppBar(
-        title: 'Billing',
-        subtitle: 'Sree Lakshmi Cards',
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        title: const Text(
+          'Billing',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.primary,
+          ),
+        ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                'Sree Lakshmi Cards',
+                style: TextStyle(
+                  color: AppTheme.secondary,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Center(child: Flourish()),
-            const SizedBox(height: 10),
-
             // ---------------------------------------------- Add product
-            ThemedCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SectionHeader(
-                    icon: Icons.add_shopping_cart,
-                    title: 'Add Product to Bill',
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<Product>(
-                    initialValue: selectedProduct,
-                    decoration: AppTheme.input(
-                      'Choose Wedding Card',
-                      icon: Icons.style_outlined,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _SectionHeader(
+                      icon: Icons.add_shopping_cart,
+                      title: 'Add Product to Bill',
                     ),
+                  const SizedBox(height: 16),
+                    DropdownButtonFormField<Product>(
+                      initialValue: selectedProduct,
+                      decoration: const InputDecoration(
+                        labelText: 'Choose Wedding Card',
+                        prefixIcon: Icon(Icons.style_outlined),
+                      ),
                     items: widget.products.map((product) {
                       return DropdownMenuItem<Product>(
                         value: product,
@@ -228,52 +246,56 @@ class _BillingScreenState extends State<BillingScreen> {
                       });
                     },
                   ),
-                  if (selectedProduct != null) ...[
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: StatusBadge(
-                        text:
-                            '${selectedProduct!.stockQuantity} in stock',
-                        color: selectedProduct!.stockQuantity > 0
-                            ? AppTheme.success
-                            : AppTheme.danger,
+                    if (selectedProduct != null) ...[
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: _StockBadge(
+                          text:
+                              '${selectedProduct!.stockQuantity} in stock',
+                          available: selectedProduct!.stockQuantity > 0,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: quantityController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Quantity',
+                        prefixIcon: Icon(Icons.numbers),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        onPressed: addItem,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add to Bill'),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: AppTheme.input(
-                      'Quantity',
-                      icon: Icons.numbers,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  PillButton(
-                    label: 'Add to Bill',
-                    icon: Icons.add,
-                    onPressed: addItem,
-                  ),
-                ],
+                ),
               ),
             ),
 
             const SizedBox(height: 18),
 
             // ---------------------------------------------- Sale type
-            ThemedCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SectionHeader(
-                    icon: Icons.swap_horiz,
-                    title: 'Sale Type',
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: AppTheme.burgundy,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _SectionHeader(
+                      icon: Icons.swap_horiz,
+                      title: 'Sale Type',
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: AppTheme.primary,
                     title: const Text(
                       'Inter-state Sale',
                       style: TextStyle(fontWeight: FontWeight.w600),
@@ -285,37 +307,43 @@ class _BillingScreenState extends State<BillingScreen> {
                         isInterstate = value;
                       });
                     },
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
 
             const SizedBox(height: 18),
 
             // ---------------------------------------------- Bill items
-            ThemedCard(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SectionHeader(
-                    icon: Icons.list_alt,
-                    title: 'Bill Items',
-                    trailing: billItems.isEmpty
-                        ? null
-                        : TextButton.icon(
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        const _SectionHeader(
+                          icon: Icons.list_alt,
+                          title: 'Bill Items',
+                        ),
+                        const Spacer(),
+                        if (billItems.isNotEmpty)
+                          TextButton.icon(
                             onPressed: () => setState(billItems.clear),
                             icon: const Icon(
                               Icons.delete_sweep_outlined,
                               size: 18,
-                              color: AppTheme.danger,
+                              color: AppTheme.primary,
                             ),
                             label: const Text(
                               'Clear All',
-                              style: TextStyle(color: AppTheme.danger),
+                              style: TextStyle(color: AppTheme.primary),
                             ),
                           ),
-                  ),
+                      ],
+                    ),
                   const SizedBox(height: 8),
                   if (billItems.isEmpty)
                     const Padding(
@@ -345,21 +373,92 @@ class _BillingScreenState extends State<BillingScreen> {
                 ],
               ),
             ),
-
+            ),
+            
             const SizedBox(height: 18),
-
+            
             // ---------------------------------------------- Summary
-            ThemedCard(child: BillSummary(subtotal: subtotal, gstResult: gstResult)),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: BillSummary(
+                  subtotal: subtotal,
+                  gstResult: gstResult,
+                ),
+              ),
+            ),
 
             const SizedBox(height: 18),
 
-            PillButton(
-              label: 'Generate Invoice',
-              icon: Icons.receipt_long,
-              onPressed: generateInvoice,
+            SizedBox(
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: generateInvoice,
+                icon: const Icon(Icons.receipt_long),
+                label: const Text('Generate Invoice'),
+              ),
             ),
             const SizedBox(height: 24),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.icon,
+    required this.title,
+  });
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 21, color: AppTheme.primary),
+        const SizedBox(width: 9),
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppTheme.primary,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StockBadge extends StatelessWidget {
+  const _StockBadge({
+    required this.text,
+    required this.available,
+  });
+
+  final String text;
+  final bool available;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: available ? AppTheme.primary : AppTheme.secondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -390,8 +489,8 @@ class _BillItemTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF1E3E0)),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppTheme.border),
       ),
       child: Row(
         children: [
@@ -400,13 +499,13 @@ class _BillItemTile extends StatelessWidget {
             height: 30,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppTheme.burgundy.withValues(alpha: 0.1),
+              color: AppTheme.background,
               shape: BoxShape.circle,
             ),
             child: Text(
               '$index',
               style: const TextStyle(
-                color: AppTheme.burgundy,
+                color: AppTheme.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -421,7 +520,7 @@ class _BillItemTile extends StatelessWidget {
                   name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.ink,
+                    color: AppTheme.primary,
                   ),
                 ),
                 Text(
@@ -435,11 +534,11 @@ class _BillItemTile extends StatelessWidget {
             '₹${subtotal.toStringAsFixed(2)}',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: AppTheme.darkBurgundy,
+              color: AppTheme.primary,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: AppTheme.danger),
+            icon: const Icon(Icons.delete_outline, color: AppTheme.primary),
             onPressed: onDelete,
             splashRadius: 20,
           ),

@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,25 +12,35 @@ class GoogleLoginScreen extends StatefulWidget {
 }
 
 class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
-  static const Color burgundy = Color(0xFF8D1725);
-  static const Color darkBurgundy = Color(0xFF5F0D18);
-  static const Color cream = Color(0xFFFFF9F6);
-  static const Color gold = Color(0xFFC99A3D);
+  // ------------------------------------------------------------
+  // THEME COLORS
+  // ------------------------------------------------------------
+
+  static const Color primaryBlue = Color(0xFF2563EB);
+  static const Color darkText = Color(0xFF0F172A);
+  static const Color background = Color(0xFFF8FAFC);
+  static const Color borderColor = Color(0xFFE2E8F0);
+  static const Color secondaryText = Color(0xFF475569);
+  static const Color lightBlue = Color(0xFFEFF6FF);
 
   // ------------------------------------------------------------
   // GOOGLE OAUTH CONFIGURATION
   // ------------------------------------------------------------
-  //
+
   // These values are used for Windows/Desktop Google Sign-In.
   //
   // IMPORTANT:
   // Do NOT commit a real OAuth client secret to GitHub.
-  //
+
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     params: const GoogleSignInParams(
       clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
       clientSecret: 'YOUR_CLIENT_SECRET',
-      scopes: ['openid', 'profile', 'email'],
+      scopes: [
+        'openid',
+        'profile',
+        'email',
+      ],
     ),
   );
 
@@ -38,12 +49,10 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
   // ------------------------------------------------------------
   // WEB GOOGLE LOGIN
   // ------------------------------------------------------------
-  //
-  // Web does NOT use google_sign_in_all_platforms.
-  //
-  // Instead, Firebase Authentication directly opens the
-  // Google OAuth popup.
-  //
+
+  // Web uses Firebase Authentication directly.
+  // Firebase opens the Google OAuth popup.
+
   Future<void> _signInWithGoogleWeb() async {
     if (_isLoading) return;
 
@@ -64,7 +73,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
       );
 
       debugPrint(
-        '✅ Firebase Google Web authentication successful',
+        'Firebase Google Web authentication successful',
       );
 
       debugPrint(
@@ -80,7 +89,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: darkBurgundy,
+          backgroundColor: primaryBlue,
           content: Text(
             'Google login failed: ${e.message ?? e.code}',
           ),
@@ -93,7 +102,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: darkBurgundy,
+          backgroundColor: primaryBlue,
           content: Text(
             'Google login failed: $e',
           ),
@@ -168,7 +177,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
       );
 
       debugPrint(
-        '✅ Firebase Google authentication successful',
+        'Firebase Google authentication successful',
       );
 
       debugPrint(
@@ -184,7 +193,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: darkBurgundy,
+          backgroundColor: primaryBlue,
           content: Text(
             'Firebase login failed: ${e.code}',
           ),
@@ -197,7 +206,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: darkBurgundy,
+          backgroundColor: primaryBlue,
           content: Text(
             'Google login failed: $e',
           ),
@@ -227,35 +236,123 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: cream,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isCompact =
-              constraints.maxWidth < 850;
+    return Theme(
+      data: ThemeData(
+        brightness: Brightness.light,
+        useMaterial3: true,
 
-          return Row(
-            children: [
-              if (!isCompact) _buildBrandPanel(),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: primaryBlue,
+          brightness: Brightness.light,
+          surface: Colors.white,
+        ),
 
-              Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding:
-                        const EdgeInsets.all(28),
-                    child: ConstrainedBox(
-                      constraints:
-                          const BoxConstraints(
-                        maxWidth: 470,
+        scaffoldBackgroundColor: background,
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: darkText,
+          elevation: 0,
+          centerTitle: false,
+        ),
+
+        cardTheme: const CardThemeData(
+          color: Colors.white,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(12),
+            ),
+            side: BorderSide(
+              color: borderColor,
+            ),
+          ),
+        ),
+
+        inputDecorationTheme:
+            InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: borderColor,
+            ),
+          ),
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: borderColor,
+            ),
+          ),
+
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: primaryBlue,
+              width: 2,
+            ),
+          ),
+        ),
+
+        elevatedButtonTheme:
+            ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryBlue,
+            foregroundColor: Colors.white,
+            elevation: 0,
+
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+
+            padding:
+                const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 14,
+            ),
+          ),
+        ),
+      ),
+
+      child: Scaffold(
+        backgroundColor: background,
+
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact =
+                constraints.maxWidth < 850;
+
+            return Row(
+              children: [
+                if (!isCompact)
+                  _buildBrandPanel(),
+
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding:
+                          const EdgeInsets.all(28),
+
+                      child: ConstrainedBox(
+                        constraints:
+                            const BoxConstraints(
+                          maxWidth: 470,
+                        ),
+
+                        child:
+                            _buildLoginCard(),
                       ),
-                      child: _buildLoginCard(),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -267,46 +364,60 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
   Widget _buildBrandPanel() {
     return Container(
       width: 360,
+
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            darkBurgundy,
-            burgundy,
+            Color(0xFF1D4ED8),
+            primaryBlue,
           ],
+
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
       ),
+
       child: SafeArea(
         child: Padding(
           padding:
               const EdgeInsets.symmetric(
             horizontal: 35,
           ),
+
           child: Column(
             mainAxisAlignment:
                 MainAxisAlignment.center,
+
             children: [
+              // ------------------------------------------------
+              // LOGO
+              // ------------------------------------------------
+
               Container(
                 width: 100,
                 height: 100,
-                decoration: BoxDecoration(
+
+                decoration:
+                    BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
+
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          Colors.black.withOpacity(
-                        0.15,
-                      ),
+                      color: Colors.black
+                          .withOpacity(0.15),
+
                       blurRadius: 12,
+
                       offset:
                           const Offset(0, 6),
                     ),
                   ],
                 ),
+
                 padding:
                     const EdgeInsets.all(12),
+
                 child: ClipOval(
                   child: Image.asset(
                     'assets/images/lotus_logo.jpg',
@@ -317,9 +428,16 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
               const SizedBox(height: 24),
 
+              // ------------------------------------------------
+              // BRAND NAME
+              // ------------------------------------------------
+
               const Text(
                 'Sree Lakshmi\nCards',
-                textAlign: TextAlign.center,
+
+                textAlign:
+                    TextAlign.center,
+
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 38,
@@ -332,17 +450,28 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
               const SizedBox(height: 28),
 
+              // ------------------------------------------------
+              // DIVIDER
+              // ------------------------------------------------
+
               Container(
                 height: 1,
                 width: 150,
-                color: gold,
+                color: Colors.white70,
               ),
 
               const SizedBox(height: 24),
 
+              // ------------------------------------------------
+              // TAGLINE
+              // ------------------------------------------------
+
               const Text(
                 'Cards for Every Occasion',
-                textAlign: TextAlign.center,
+
+                textAlign:
+                    TextAlign.center,
+
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 22,
@@ -355,10 +484,17 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
               const SizedBox(height: 20),
 
+              // ------------------------------------------------
+              // DESCRIPTION
+              // ------------------------------------------------
+
               const Text(
                 'Manage your products, billing and '
                 'invoices with ease.',
-                textAlign: TextAlign.center,
+
+                textAlign:
+                    TextAlign.center,
+
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 15,
@@ -378,57 +514,51 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
   Widget _buildLoginCard() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(
+      padding:
+          const EdgeInsets.fromLTRB(
         34,
         36,
         34,
         32,
       ),
+
       decoration: BoxDecoration(
         color: Colors.white,
+
         borderRadius:
-            BorderRadius.circular(24),
+            BorderRadius.circular(12),
+
         border: Border.all(
-          color: const Color(0xFFEAD6D1),
+          color: borderColor,
         ),
+
         boxShadow: const [
           BoxShadow(
-            color: Color(0x18000000),
-            blurRadius: 24,
-            offset: Offset(0, 12),
+            color: Color(0x12000000),
+            blurRadius: 20,
+            offset:
+                Offset(0, 8),
           ),
         ],
       ),
+
       child: Column(
         children: [
-          Container(
-            padding:
-                const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFE9E8),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFFF1C6BF),
-              ),
-            ),
-            child: const Icon(
-              Icons.lock_outline_rounded,
-              color: burgundy,
-              size: 38,
-            ),
-          ),
-
-          const SizedBox(height: 22),
+          // ----------------------------------------------------
+          // WELCOME TEXT
+          // ----------------------------------------------------
 
           const Text(
             'Welcome Back',
-            textAlign: TextAlign.center,
+
+            textAlign:
+                TextAlign.center,
+
             style: TextStyle(
-              color: darkBurgundy,
+              color: darkText,
               fontSize: 32,
               fontWeight:
                   FontWeight.bold,
-              fontFamily: 'Georgia',
             ),
           ),
 
@@ -437,152 +567,151 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
           const Text(
             'Sign in to access your '
             'Sree Lakshmi Cards dashboard',
-            textAlign: TextAlign.center,
+
+            textAlign:
+                TextAlign.center,
+
             style: TextStyle(
-              color: Colors.black54,
+              color: secondaryText,
               fontSize: 15,
               height: 1.5,
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 30),
 
-          const Text(
-            '✦  ❖  ✦',
-            style: TextStyle(
-              color: gold,
-              fontSize: 23,
+          // ----------------------------------------------------
+          // GOOGLE SIGN-IN
+          // ----------------------------------------------------
+
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+
+            child: ElevatedButton.icon(
+              onPressed: _isLoading
+                  ? null
+                  : (kIsWeb
+                      ? _signInWithGoogleWeb
+                      : _signInWithGoogle),
+
+              icon: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+
+                      child:
+                          CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(
+                      Icons
+                          .account_circle_outlined,
+                      color: Colors.white,
+                    ),
+
+              label: Text(
+                _isLoading
+                    ? 'Signing in...'
+                    : 'Continue with Google',
+
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight:
+                      FontWeight.bold,
+                ),
+              ),
+
+              style:
+                  ElevatedButton.styleFrom(
+                backgroundColor:
+                    primaryBlue,
+
+                foregroundColor:
+                    Colors.white,
+
+                disabledBackgroundColor:
+                    const Color(0xFF93B4F4),
+
+                disabledForegroundColor:
+                    Colors.white,
+
+                elevation: 0,
+
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(8),
+                ),
+              ),
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // --------------------------------------------------
-          // GOOGLE LOGIN
-          // --------------------------------------------------
-          //
-          // WEB:
-          // Firebase signInWithPopup()
-          //
-          // WINDOWS:
-          // google_sign_in_all_platforms
-          // --------------------------------------------------
+          // ----------------------------------------------------
+          // INFORMATION
+          // ----------------------------------------------------
 
-          if (kIsWeb)
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton.icon(
-                onPressed:
-                    _isLoading
-                        ? null
-                        : _signInWithGoogleWeb,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child:
-                            CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(
-                        Icons
-                            .account_circle_outlined,
-                        color: Colors.white,
-                      ),
-                label: Text(
-                  _isLoading
-                      ? 'Signing in...'
-                      : 'Continue with Google',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
-                ),
-                style:
-                    ElevatedButton.styleFrom(
-                  backgroundColor:
-                      burgundy,
-                  foregroundColor:
-                      Colors.white,
-                  disabledBackgroundColor:
-                      const Color(0xFFB97982),
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      30,
-                    ),
-                  ),
-                  elevation: 3,
-                ),
-              ),
-            )
-          else
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton.icon(
-                onPressed:
-                    _isLoading
-                        ? null
-                        : _signInWithGoogle,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child:
-                            CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(
-                        Icons
-                            .account_circle_outlined,
-                        color: Colors.white,
-                      ),
-                label: Text(
-                  _isLoading
-                      ? 'Signing in...'
-                      : 'Continue with Google',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
-                ),
-                style:
-                    ElevatedButton.styleFrom(
-                  backgroundColor:
-                      burgundy,
-                  foregroundColor:
-                      Colors.white,
-                  disabledBackgroundColor:
-                      const Color(0xFFB97982),
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      30,
-                    ),
-                  ),
-                  elevation: 3,
-                ),
+          Container(
+            width: double.infinity,
+
+            padding:
+                const EdgeInsets.all(12),
+
+            decoration:
+                BoxDecoration(
+              color: lightBlue,
+
+              borderRadius:
+                  BorderRadius.circular(8),
+
+              border: Border.all(
+                color:
+                    const Color(0xFFBFDBFE),
               ),
             ),
 
-          const SizedBox(height: 22),
+            child: const Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: primaryBlue,
+                ),
+
+                SizedBox(width: 10),
+
+                Expanded(
+                  child: Text(
+                    'Sign in securely using your '
+                    'Google account.',
+                    style: TextStyle(
+                      color: secondaryText,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
 
           const Text(
-            'Secure access powered by '
-            'Firebase Authentication',
-            textAlign: TextAlign.center,
+            'Powered by Firebase Authentication',
+
+            textAlign:
+                TextAlign.center,
+
             style: TextStyle(
-              color: Colors.black45,
+              color: Color(0xFF64748B),
               fontSize: 12,
             ),
           ),
@@ -591,3 +720,4 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
     );
   }
 }
+

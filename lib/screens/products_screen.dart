@@ -44,16 +44,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: AppTheme.panel,
+          backgroundColor: AppTheme.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(4),
+            side: const BorderSide(color: AppTheme.border),
           ),
           titlePadding: const EdgeInsets.fromLTRB(24, 22, 24, 4),
           contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 4),
           actionsPadding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
           title: Text(
             product == null ? 'Add Product' : 'Edit Product',
-            style: AppTheme.serifStyle(size: 24),
+            style: const TextStyle(
+              color: AppTheme.primary,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
 
           content: SingleChildScrollView(
@@ -63,9 +68,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 const SizedBox(height: 6),
                 TextField(
                   controller: nameController,
-                  decoration: AppTheme.input(
-                    'Product Name',
-                    icon: Icons.style_outlined,
+                  decoration: const InputDecoration(
+                    labelText: 'Product Name',
+                    prefixIcon: Icon(Icons.style_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -74,35 +79,35 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: AppTheme.input(
-                    'Selling Price',
-                    icon: Icons.currency_rupee,
+                  decoration: const InputDecoration(
+                    labelText: 'Selling Price',
+                    prefixIcon: Icon(Icons.currency_rupee),
                   ),
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: hsnController,
-                  decoration: AppTheme.input(
-                    'HSN Code',
-                    icon: Icons.qr_code_2,
+                  decoration: const InputDecoration(
+                    labelText: 'HSN Code',
+                    prefixIcon: Icon(Icons.qr_code_2),
                   ),
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: gstController,
                   keyboardType: TextInputType.number,
-                  decoration: AppTheme.input(
-                    'GST Rate (%)',
-                    icon: Icons.percent,
+                  decoration: const InputDecoration(
+                    labelText: 'GST Rate (%)',
+                    prefixIcon: Icon(Icons.percent),
                   ),
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: stockController,
                   keyboardType: TextInputType.number,
-                  decoration: AppTheme.input(
-                    'Stock Quantity',
-                    icon: Icons.inventory_2_outlined,
+                  decoration: const InputDecoration(
+                    labelText: 'Stock Quantity',
+                    prefixIcon: Icon(Icons.inventory_2_outlined),
                   ),
                 ),
               ],
@@ -114,13 +119,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
-              style: TextButton.styleFrom(foregroundColor: AppTheme.ink),
+              style: TextButton.styleFrom(foregroundColor: AppTheme.primary),
               child: const Text('Cancel'),
             ),
-            PillButton(
-              expand: false,
-              label: product == null ? 'Add' : 'Update',
-              onPressed: () {
+            SizedBox(
+              height: 44,
+              child: ElevatedButton(
+                child: Text(product == null ? 'Add' : 'Update'),
+                onPressed: () {
                 final name = nameController.text.trim();
                 final price = double.tryParse(priceController.text);
                 final gstRate = double.tryParse(gstController.text);
@@ -138,7 +144,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     const SnackBar(
                       content: Text('Enter valid product details'),
                       behavior: SnackBarBehavior.floating,
-                      backgroundColor: AppTheme.danger,
+                      backgroundColor: AppTheme.secondary,
                     ),
                   );
                   return;
@@ -165,6 +171,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 Navigator.pop(dialogContext);
               },
             ),
+            ),
           ],
         );
       },
@@ -176,13 +183,18 @@ class _ProductsScreenState extends State<ProductsScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: AppTheme.panel,
+          backgroundColor: AppTheme.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(4),
+            side: const BorderSide(color: AppTheme.border),
           ),
           title: Text(
             'Delete Product?',
-            style: AppTheme.serifStyle(size: 22),
+            style: const TextStyle(
+            color: AppTheme.primary,
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
+          ),
           ),
           content: Text('Remove ${product.name} from inventory?'),
           actions: [
@@ -190,18 +202,22 @@ class _ProductsScreenState extends State<ProductsScreen> {
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
-              style: TextButton.styleFrom(foregroundColor: AppTheme.ink),
+              style: TextButton.styleFrom(foregroundColor: AppTheme.primary),
               child: const Text('Cancel'),
             ),
-            PillButton(
-              expand: false,
-              label: 'Delete',
-              icon: Icons.delete_outline,
-              color: AppTheme.danger,
-              onPressed: () {
+            SizedBox(
+              height: 44,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Delete'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.secondary,
+                ),
+                onPressed: () {
                 widget.onDelete(product.id);
                 Navigator.pop(dialogContext);
               },
+            ),
             ),
           ],
         );
@@ -212,13 +228,33 @@ class _ProductsScreenState extends State<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.cream,
-      appBar: const ThemedAppBar(
-        title: 'Products',
-        subtitle: 'Sree Lakshmi Cards',
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        title: const Text(
+          'Products',
+          style: TextStyle(
+            color: AppTheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                'Sree Lakshmi Cards',
+                style: TextStyle(
+                  color: AppTheme.secondary,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppTheme.burgundy,
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.white,
         onPressed: () => showProductForm(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -230,15 +266,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   Icon(
                     Icons.inventory_2_outlined,
                     size: 64,
-                    color: AppTheme.burgundy.withValues(alpha: 0.35),
+                    color: AppTheme.primary.withValues(alpha: 0.35),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'No products added yet.',
-                    style: AppTheme.serifStyle(
-                      size: 18,
-                      weight: FontWeight.normal,
-                      color: Colors.black54,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: AppTheme.secondary,
                     ),
                   ),
                 ],
@@ -253,19 +288,17 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: ThemedCard(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-                    child: Row(
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+                      child: Row(
                       children: [
                         Container(
                           width: 46,
                           height: 46,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              center: Alignment(-0.3, -0.4),
-                              colors: [Color(0xFFB02A3E), Color(0xFF7A1120)],
-                            ),
+                            color: AppTheme.primary,
                           ),
                           child: const Icon(
                             Icons.style_outlined,
@@ -282,7 +315,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: AppTheme.ink,
+                                  color: AppTheme.primary,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -295,13 +328,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              StatusBadge(
+                              _StockBadge(
                                 text: inStock
                                     ? '${product.stockQuantity} in stock'
                                     : 'Out of stock',
-                                color: inStock
-                                    ? AppTheme.success
-                                    : AppTheme.danger,
+                                available: inStock,
                               ),
                             ],
                           ),
@@ -309,10 +340,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         PopupMenuButton<String>(
                           icon: const Icon(
                             Icons.more_vert,
-                            color: AppTheme.burgundy,
+                            color: AppTheme.primary,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           onSelected: (value) {
                             if (value == 'edit') {
@@ -329,7 +360,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   Icon(
                                     Icons.edit_outlined,
                                     size: 18,
-                                    color: AppTheme.burgundy,
+                                    color: AppTheme.primary,
                                   ),
                                   SizedBox(width: 10),
                                   Text('Edit'),
@@ -343,7 +374,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   Icon(
                                     Icons.delete_outline,
                                     size: 18,
-                                    color: AppTheme.danger,
+                                    color: AppTheme.secondary,
                                   ),
                                   SizedBox(width: 10),
                                   Text('Delete'),
@@ -353,11 +384,42 @@ class _ProductsScreenState extends State<ProductsScreen> {
                           ],
                         ),
                       ],
+                      ),
                     ),
                   ),
                 );
               },
             ),
+    );
+  }
+}
+
+class _StockBadge extends StatelessWidget {
+  const _StockBadge({
+    required this.text,
+    required this.available,
+  });
+
+  final String text;
+  final bool available;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: available ? AppTheme.primary : AppTheme.secondary,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }
