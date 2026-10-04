@@ -7,7 +7,6 @@ import '../widgets/user_avatar.dart';
 enum AppSection {
   home,
   billing,
-  products,
   invoices,
 }
 
@@ -83,14 +82,7 @@ class AppShell extends StatelessWidget {
         selected: section == AppSection.billing,
       ),
 
-      _NavItem(
-        icon: Icons.inventory_2_outlined,
-        label: 'Products',
-        onTap: () {
-          onSectionSelected(AppSection.products);
-        },
-        selected: section == AppSection.products,
-      ),
+  
 
       _NavItem(
         icon: Icons.description_outlined,
@@ -342,9 +334,9 @@ class _Sidebar extends StatelessWidget {
                     BorderRadius.circular(7),
 
                 child: Image.asset(
-                  'assets/images/lovely_lakshmi.jpg',
+                  'assets/images/lakshmi_hd.png',
 
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
 
                   errorBuilder:
                       (context, error, stackTrace) {

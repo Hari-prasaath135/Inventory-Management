@@ -4,16 +4,15 @@ import 'package:flutter/material.dart';
 import 'app_shell.dart';
 
 class HomeContent extends StatelessWidget {
-  const HomeContent({
-    super.key,
-    required this.onBilling,
-    required this.onProducts,
-    required this.onInvoices,
-    this.user,
-  });
+ const HomeContent({
+  super.key,
+  required this.onBilling,
+  required this.onInvoices,
+  this.user,
+});
 
   final VoidCallback onBilling;
-  final VoidCallback onProducts;
+
   final VoidCallback onInvoices;
   final User? user;
 
@@ -60,26 +59,20 @@ class HomeContent extends StatelessWidget {
               builder: (context, constraints) {
                 final compact = constraints.maxWidth < 700;
 
-                final cards = [
-                  _DashboardCard(
-                    icon: Icons.inventory_2_outlined,
-                    title: 'Products',
-                    value: 'View',
-                    onTap: onProducts,
-                  ),
-                  _DashboardCard(
-                    icon: Icons.warehouse_outlined,
-                    title: 'Stock',
-                    value: 'View',
-                    onTap: onProducts,
-                  ),
-                  _DashboardCard(
-                    icon: Icons.point_of_sale_outlined,
-                    title: 'Sales',
-                    value: 'View',
-                    onTap: onBilling,
-                  ),
-                ];
+             final cards = [
+                _DashboardCard(
+                  icon: Icons.point_of_sale_outlined,
+                  title: 'Products & Billing',
+                  value: 'Create Bill',
+                  onTap: onBilling,
+                ),
+                _DashboardCard(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Invoices',
+                  value: 'View',
+                  onTap: onInvoices,
+                ),
+              ];
 
                 if (compact) {
                   return Column(
@@ -93,15 +86,13 @@ class HomeContent extends StatelessWidget {
                   );
                 }
 
-                return Row(
-                  children: [
-                    Expanded(child: cards[0]),
-                    const SizedBox(width: 16),
-                    Expanded(child: cards[1]),
-                    const SizedBox(width: 16),
-                    Expanded(child: cards[2]),
-                  ],
-                );
+              return Row(
+  children: [
+    Expanded(child: cards[0]),
+    const SizedBox(width: 16),
+    Expanded(child: cards[1]),
+  ],
+);
               },
             ),
 
@@ -121,33 +112,27 @@ class HomeContent extends StatelessWidget {
 
             const SizedBox(height: 14),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.add_shopping_cart_outlined,
-                    title: 'New Bill',
-                    onTap: onBilling,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.inventory_2_outlined,
-                    title: 'Products',
-                    onTap: onProducts,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.receipt_long_outlined,
-                    title: 'Invoices',
-                    onTap: onInvoices,
-                  ),
-                ),
-              ],
-            ),
+          Row(
+  children: [
+    Expanded(
+      child: _ActionButton(
+        icon: Icons.add_shopping_cart_outlined,
+        title: 'New Bill',
+        onTap: onBilling,
+      ),
+    ),
+
+    const SizedBox(width: 12),
+
+    Expanded(
+      child: _ActionButton(
+        icon: Icons.receipt_long_outlined,
+        title: 'Invoices',
+        onTap: onInvoices,
+      ),
+    ),
+  ],
+),
 
             const SizedBox(height: 32),
 

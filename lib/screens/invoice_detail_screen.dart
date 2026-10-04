@@ -37,7 +37,7 @@ class InvoiceDetailScreen extends StatelessWidget {
             padding: EdgeInsets.only(right: 16),
             child: Center(
               child: Text(
-                'Sree Lakshmi Cards & Bags',
+                'Sree Lakshmi Cards',
                 style: TextStyle(
                   color: AppTheme.secondary,
                   fontSize: 13,
@@ -255,7 +255,7 @@ class InvoiceDetailScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   try {
-                    await InvoicePdfService.generateInvoicePdf(invoice);
+                    await _showPrintDetailsDialog(context);
                   } catch (e) {
                     if (!context.mounted) return;
 
@@ -315,6 +315,110 @@ class InvoiceDetailScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showPrintDetailsDialog(BuildContext context) async {
+    final nameController = TextEditingController(text: invoice.customerName);
+   
+
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            backgroundColor: AppTheme.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+              side: const BorderSide(color: AppTheme.border),
+            ),
+            title: const Text(
+              'Billing Details',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: SizedBox(
+              width: 500,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Enter the customer details for the printed bill.',
+                      style: TextStyle(
+                        color: AppTheme.secondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameController,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      labelText: 'Customer Name',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+              
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.primary,
+                ),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final name = nameController.text.trim();
+                 
+
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please enter the customer name.'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  Navigator.pop(dialogContext);
+
+                  try {
+                    await InvoicePdfService.generateInvoicePdf(
+                      invoice,
+                      customerName: name,
+                     
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to generate PDF: $e'),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.print_outlined),
+                label: const Text('Print Bill'),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      nameController.dispose();
+   
+    }
   }
 
   void _showCancelDialog(BuildContext context) {

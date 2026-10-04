@@ -418,12 +418,12 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
                 padding:
                     const EdgeInsets.all(12),
 
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/images/lovely_lakshmi.jpg',
-                    fit: BoxFit.cover,
-                  ),
-                ),
+             child: ClipOval(
+  child: Image.asset(
+    'assets/images/lakshmi_hd.png',
+    fit: BoxFit.contain,
+  ),
+),
               ),
 
               const SizedBox(height: 24),

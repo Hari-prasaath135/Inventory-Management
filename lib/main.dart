@@ -1,13 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart'; 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
 
-import 'models/bill_item.dart';
 import 'models/invoice.dart';
-import 'models/product.dart';
 
 import 'repositories/invoice_repository.dart';
 
@@ -16,11 +14,8 @@ import 'screens/home_page.dart';
 import 'screens/billing_screen.dart';
 import 'screens/google_login_screen.dart';
 import 'screens/invoice_history_screen.dart';
-import 'screens/products_screen.dart';
 
 import 'services/invoice_service.dart';
-import 'services/invoice_pdf_service.dart';
-import 'services/product_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +33,6 @@ void main() async {
   runApp(const AuthGate());
 }
 
-
 // ============================================================
 // AUTH GATE
 // ============================================================
@@ -51,8 +45,10 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState ==
+            ConnectionState.waiting) {
           return const MaterialApp(
+            debugShowCheckedModeBanner: false,
             home: Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
@@ -66,13 +62,13 @@ class AuthGate extends StatelessWidget {
         }
 
         return const MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: GoogleLoginScreen(),
         );
       },
     );
   }
 }
-
 
 // ============================================================
 // MAIN APPLICATION
@@ -82,35 +78,30 @@ class WeddingCardApp extends StatefulWidget {
   const WeddingCardApp({super.key});
 
   @override
-  State<WeddingCardApp> createState() => _WeddingCardAppState();
+  State<WeddingCardApp> createState() =>
+      _WeddingCardAppState();
 }
-
 
 // ============================================================
 // APPLICATION STATE
 // ============================================================
 
 class _WeddingCardAppState extends State<WeddingCardApp> {
-  final List<Product> products = [];
   final List<Invoice> invoices = [];
 
-  // Current page selected in the AppShell sidebar.
   AppSection currentSection = AppSection.home;
 
-  final InvoiceService invoiceService = InvoiceService();
-
-  bool isLoadingInvoices = true;
-
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-      GlobalKey<ScaffoldMessengerState>();
-
-  final ProductService productService = ProductService();
+  final InvoiceService invoiceService =
+      InvoiceService();
 
   final InvoiceRepository invoiceRepository =
       InvoiceRepository();
 
-  bool isLoadingProducts = true;
+  bool isLoadingInvoices = true;
 
+  final GlobalKey<ScaffoldMessengerState>
+      scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   // ==========================================================
   // INITIALIZATION
@@ -120,10 +111,8 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
   void initState() {
     super.initState();
 
-    loadProducts();
     loadInvoices();
   }
-
 
   // ==========================================================
   // LOAD INVOICES
@@ -147,10 +136,12 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
         isLoadingInvoices = false;
       });
 
-      debugPrint('✅ Invoices loaded from Firestore');
+      debugPrint(
+        'Invoices loaded from Firestore',
+      );
     } catch (error) {
       debugPrint(
-        '❌ Failed to load invoices: $error',
+        'Failed to load invoices: $error',
       );
 
       if (!mounted) return;
@@ -161,215 +152,55 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
     }
   }
 
-
-  // ==========================================================
-  // LOAD PRODUCTS
-  // ==========================================================
-
-  Future<void> loadProducts() async {
-    try {
-      final loadedProducts =
-          await productService.getProducts();
-
-      if (!mounted) return;
-
-      setState(() {
-        products.clear();
-        products.addAll(loadedProducts);
-
-        isLoadingProducts = false;
-      });
-
-      debugPrint('✅ Products loaded from Firestore');
-    } catch (error) {
-      debugPrint(
-        '❌ Failed to load products: $error',
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        isLoadingProducts = false;
-      });
-    }
-  }
-
-
-  // ==========================================================
-  // ADD PRODUCT
-  // ==========================================================
-
-  void addProduct(Product product) async {
-    try {
-      await productService.addProduct(product);
-
-      if (!mounted) return;
-
-      setState(() {
-        products.add(product);
-      });
-
-      debugPrint('✅ Product added to Firestore');
-
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Product added successfully',
-          ),
-        ),
-      );
-    } catch (error) {
-      debugPrint(
-        '❌ Failed to add product: $error',
-      );
-
-      if (!mounted) return;
-
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Product added successfully',
-          ),
-        ),
-      );
-    }
-  }
-
-
-  // ==========================================================
-  // UPDATE PRODUCT
-  // ==========================================================
-
-  void updateProduct(Product product) async {
-    try {
-      await productService.updateProduct(product);
-
-      if (!mounted) return;
-
-      setState(() {
-        final index = products.indexWhere(
-          (item) => item.id == product.id,
-        );
-
-        if (index != -1) {
-          products[index] = product;
-        }
-      });
-
-      debugPrint('✅ Product updated in Firestore');
-
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Product added successfully',
-          ),
-        ),
-      );
-    } catch (error) {
-      debugPrint(
-        '❌ Failed to update product: $error',
-      );
-
-      if (!mounted) return;
-
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Product added successfully',
-          ),
-        ),
-      );
-    }
-  }
-
-
-  // ==========================================================
-  // DELETE PRODUCT
-  // ==========================================================
-
-  void deleteProduct(String id) async {
-    try {
-      await productService.deleteProduct(id);
-
-      if (!mounted) return;
-
-      setState(() {
-        products.removeWhere(
-          (item) => item.id == id,
-        );
-      });
-
-      debugPrint('✅ Product deleted from Firestore');
-
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Product added successfully',
-          ),
-        ),
-      );
-    } catch (error) {
-      debugPrint(
-        '❌ Failed to delete product: $error',
-      );
-
-      if (!mounted) return;
-
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Product added successfully',
-          ),
-        ),
-      );
-    }
-  }
-
-
   // ==========================================================
   // SAVE INVOICE
   // ==========================================================
 
-  Future<void> saveInvoice(Invoice invoice) async {
+  Future<void> saveInvoice(
+    Invoice invoice,
+  ) async {
     try {
-      // STEP 1: Save to Firestore
+      // Save to Firestore
       await invoiceService.addInvoice(invoice);
 
-      // STEP 2: Update local invoice list
       if (!mounted) return;
 
+      // Update local list
       setState(() {
         invoices.add(invoice);
       });
 
-      // STEP 3: Generate / open printable invoice
-      await InvoicePdfService.generateInvoicePdf(
-        invoice,
-      );
+      // Update local repository
+      invoiceRepository.addInvoice(invoice);
 
-      // STEP 4: Success message
-      if (!mounted) return;
+      // PDF is NOT generated here.
+      // User generates it from Invoice Detail screen.
 
-      scaffoldMessengerKey.currentState?.showSnackBar(
+      scaffoldMessengerKey.currentState
+          ?.showSnackBar(
         const SnackBar(
           content: Text(
             'Invoice saved successfully',
           ),
         ),
       );
-    } catch (e) {
+    } catch (error) {
+      debugPrint(
+        'Failed to save invoice: $error',
+      );
+
       if (!mounted) return;
 
-      scaffoldMessengerKey.currentState?.showSnackBar(
+      scaffoldMessengerKey.currentState
+          ?.showSnackBar(
         SnackBar(
           content: Text(
-            'Failed to save invoice: $e',
+            'Failed to save invoice: $error',
           ),
         ),
       );
     }
   }
-
 
   // ==========================================================
   // CANCEL INVOICE
@@ -383,12 +214,20 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
     }
 
     try {
-      await invoiceService
-          .cancelInvoiceAndRestoreStock(invoice);
+      final cancelledInvoice =
+          invoice.copyWith(
+        isCancelled: true,
+      );
+
+      // Cancel invoice in Firestore
+      await invoiceService.cancelInvoice(
+        cancelledInvoice,
+      );
 
       if (!mounted) return;
 
-      final invoiceIndex = invoices.indexWhere(
+      final invoiceIndex =
+          invoices.indexWhere(
         (item) => item.id == invoice.id,
       );
 
@@ -396,51 +235,26 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
         return;
       }
 
-      final cancelledInvoice =
-          invoices[invoiceIndex].copyWith(
-        isCancelled: true,
-      );
-
       setState(() {
         invoices[invoiceIndex] =
             cancelledInvoice;
-
-        invoiceRepository.updateInvoice(
-          cancelledInvoice,
-        );
-
-        // Update local stock after Firestore succeeds.
-        for (final item in invoice.items) {
-          final productIndex = products.indexWhere(
-            (product) =>
-                product.id == item.product.id,
-          );
-
-          if (productIndex != -1) {
-            final product =
-                products[productIndex];
-
-            products[productIndex] =
-                product.copyWith(
-              stockQuantity:
-                  product.stockQuantity +
-                      item.quantity,
-            );
-          }
-        }
       });
+
+      invoiceRepository.updateInvoice(
+        cancelledInvoice,
+      );
 
       scaffoldMessengerKey.currentState
           ?.showSnackBar(
         const SnackBar(
           content: Text(
-            'Invoice cancelled and stock restored',
+            'Invoice cancelled successfully',
           ),
         ),
       );
     } catch (error) {
       debugPrint(
-        '❌ Failed to cancel invoice: $error',
+        'Failed to cancel invoice: $error',
       );
 
       if (!mounted) return;
@@ -456,58 +270,6 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
     }
   }
 
-
-  // ==========================================================
-  // REDUCE STOCK
-  // ==========================================================
-
-  Future<void> reduceStock(
-    List<BillItem> billItems,
-  ) async {
-    try {
-      for (final item in billItems) {
-        await productService.reduceStock(
-          productId: item.product.id,
-          quantity: item.quantity,
-        );
-      }
-
-      if (!mounted) return;
-
-      // Update local stock after Firestore succeeds.
-      setState(() {
-        for (final item in billItems) {
-          final index = products.indexWhere(
-            (product) =>
-                product.id == item.product.id,
-          );
-
-          if (index != -1) {
-            final product = products[index];
-
-            products[index] =
-                product.copyWith(
-              stockQuantity:
-                  product.stockQuantity -
-                      item.quantity,
-            );
-          }
-        }
-      });
-
-      debugPrint(
-        '✅ Stock reduced in Firestore',
-      );
-    } catch (error) {
-      debugPrint(
-        '❌ Failed to reduce stock: $error',
-      );
-
-      rethrow;
-    }
-  }
-
-
   // ==========================================================
   // BODY FOR SELECTED SECTION
   // ==========================================================
@@ -516,6 +278,10 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
     AppSection section,
   ) {
     switch (section) {
+      // --------------------------------------------------------
+      // DASHBOARD
+      // --------------------------------------------------------
+
       case AppSection.home:
         return HomeContent(
           user: FirebaseAuth.instance.currentUser,
@@ -527,37 +293,26 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
             });
           },
 
-          onProducts: () {
-            setState(() {
-              currentSection =
-                  AppSection.products;
-            });
-          },
-
           onInvoices: () {
             setState(() {
               currentSection =
                   AppSection.invoices;
             });
           },
-
-       
         );
+
+      // --------------------------------------------------------
+      // PRODUCTS & BILLING
+      // --------------------------------------------------------
 
       case AppSection.billing:
         return BillingScreen(
-          products: products,
-          onSaleComplete: reduceStock,
           onInvoiceCreated: saveInvoice,
         );
 
-      case AppSection.products:
-        return ProductsScreen(
-          products: products,
-          onAdd: addProduct,
-          onUpdate: updateProduct,
-          onDelete: deleteProduct,
-        );
+      // --------------------------------------------------------
+      // INVOICES
+      // --------------------------------------------------------
 
       case AppSection.invoices:
         return InvoiceHistoryScreen(
@@ -566,7 +321,6 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
         );
     }
   }
-
 
   // ==========================================================
   // BUILD
@@ -589,33 +343,29 @@ class _WeddingCardAppState extends State<WeddingCardApp> {
         useMaterial3: true,
       ),
 
-      home:
-          isLoadingProducts ||
-                  isLoadingInvoices
-              ? const Scaffold(
-                  body: Center(
-                    child:
-                        CircularProgressIndicator(),
-                  ),
-                )
-              : AppShell(
-                  section: currentSection,
+      home: isLoadingInvoices
+          ? const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : AppShell(
+              section: currentSection,
 
-                  onSectionSelected: (section) {
-                    setState(() {
-                      currentSection =
-                          section;
-                    });
-                  },
+              onSectionSelected: (section) {
+                setState(() {
+                  currentSection = section;
+                });
+              },
 
-                  body: _bodyForSection(
-                    currentSection,
-                  ),
+              body: _bodyForSection(
+                currentSection,
+              ),
 
-                  user: FirebaseAuth
-                      .instance
-                      .currentUser,
-                ),
+              user: FirebaseAuth
+                  .instance
+                  .currentUser,
+            ),
     );
   }
 }

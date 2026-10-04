@@ -63,6 +63,7 @@ flutter:
     - assets/images/sri_lakshmi.png
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Bold.ttf
+    - assets/images/lakshmi_hd.png
     
 
   # The following line ensures that the Material Icons font is
