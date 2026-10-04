@@ -242,7 +242,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             padding: EdgeInsets.only(right: 16),
             child: Center(
               child: Text(
-                'Sree Lakshmi Cards',
+                'Sree Lakshmi Cards & Bags',
                 style: TextStyle(
                   color: AppTheme.secondary,
                   fontSize: 13,

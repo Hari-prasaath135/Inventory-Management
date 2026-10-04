@@ -11,7 +11,7 @@ class InvoicePdfService {
   // SHOP DETAILS
   // ============================================================
 
-  static const String shopName = 'Sree Lakshmi Cards';
+  static const String shopName = 'Sree Lakshmi Cards & Bags';
 
   static const String shopTagline =
       'WHOLESALE & RETAIL DEALER IN';
@@ -28,7 +28,7 @@ class InvoicePdfService {
   static const String mobile =
     'Mobile: +91 90423 80305';
   static const String gstin =
-      '34BPPPA3805N2ZQ';
+      '34HKEPP6684J1ZG';
 
   static const String placeOfSupply =
       'Puducherry (34)';

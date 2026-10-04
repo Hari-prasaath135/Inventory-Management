@@ -59,6 +59,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/lotus_logo.jpg
+    - assets/images/lovely_lakshmi.jpg
     - assets/images/sri_lakshmi.png
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Bold.ttf

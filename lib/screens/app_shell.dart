@@ -147,7 +147,7 @@ class AppShell extends StatelessWidget {
         elevation: 0,
 
         title: Text(
-          'Sree Lakshmi Cards',
+          'Sree Lakshmi Cards & Bags',
           style: serifStyle(
             size: 20,
             color: darkText,
@@ -269,7 +269,7 @@ class _DesktopHeader extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            'Sree Lakshmi Cards',
+            'Sree Lakshmi Cards & Bags',
          style: AppShell.serifStyle(
   size: 22,
   color: AppShell.darkText,
@@ -342,7 +342,7 @@ class _Sidebar extends StatelessWidget {
                     BorderRadius.circular(7),
 
                 child: Image.asset(
-                  'assets/images/lotus_logo.jpg',
+                  'assets/images/lovely_lakshmi.jpg',
 
                   fit: BoxFit.cover,
 
@@ -360,13 +360,16 @@ class _Sidebar extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            Text(
-              'Sree Lakshmi',
-              style: AppShell.serifStyle(
-                size: 19,
-                color: AppShell.darkText,
-              ),
-            ),
+           Text(
+  'Sree Lakshmi Cards and Bags',
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    fontSize: 26,
+    fontWeight: FontWeight.w900,
+    letterSpacing: 0.5,
+    color: AppShell.darkText,
+  ),
+),
 
           const Text(
   'Cards',

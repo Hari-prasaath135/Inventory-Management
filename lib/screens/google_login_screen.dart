@@ -420,7 +420,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
 
                 child: ClipOval(
                   child: Image.asset(
-                    'assets/images/lotus_logo.jpg',
+                    'assets/images/lovely_lakshmi.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -433,7 +433,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
               // ------------------------------------------------
 
               const Text(
-                'Sree Lakshmi\nCards',
+                'Sree Lakshmi Cards & Bags',
 
                 textAlign:
                     TextAlign.center,
