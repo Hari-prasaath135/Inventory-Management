@@ -57,10 +57,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-  assets:
-    - assets/images/lotus_logo.jpg
-    - assets/images/lovely_lakshmi.jpg
-    - assets/images/sri_lakshmi.png
+  assets:  
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Bold.ttf
     - assets/images/lakshmi_hd.png
